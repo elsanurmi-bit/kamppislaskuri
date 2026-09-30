@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kampanjan kannattavuuslaskuri</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F6F7F4;
+    --panel: #FFFFFF;
+    --ink: #14231C;
+    --ink-soft: #5B665F;
+    --line: #DEE3DD;
+    --green-deep: #123326;
+    --green-deep-2: #1B4636;
+    --green-bright: #7ED957;
+    --green-bright-ink: #123326;
+    --warn: #C1502E;
+    --warn-soft: #F4DED4;
+    font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0F1713;
+      --panel: #182620;
+      --ink: #ECF2EE;
+      --ink-soft: #9AAAA1;
+      --line: #2B3B33;
+      --green-deep: #0C1F17;
+      --green-deep-2: #16332688;
+      --warn-soft: #3A2620;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0F1713;
+    --panel: #182620;
+    --ink: #ECF2EE;
+    --ink-soft: #9AAAA1;
+    --line: #2B3B33;
+    --green-deep: #0C1F17;
+    --green-deep-2: #16332688;
+    --warn-soft: #3A2620;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    padding: env(safe-area-inset-top, 0px) 0 env(safe-area-inset-bottom, 0px) 0;
+    min-height: 100%;
+  }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 48px 24px 64px;
+  }
+
+  header.page-head {
+    margin-bottom: 32px;
+  }
+  header.page-head h1 {
+    font-size: clamp(1.6rem, 3.4vw, 2.3rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 8px;
+  }
+  header.page-head p {
+    color: var(--ink-soft);
+    font-size: 0.98rem;
+    max-width: 62ch;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 20px;
+    align-items: start;
+  }
+  @media (max-width: 760px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px 26px;
+  }
+
+  .field {
+    margin-bottom: 26px;
+  }
+  .field:last-child { margin-bottom: 0; }
+
+  .field-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+    gap: 12px;
+  }
+  .field-label {
+    font-size: 0.86rem;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+  .field-value {
+    font-size: 1.05rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--line);
+    outline: none;
+    margin: 0;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--green-deep-2);
+    border: 3px solid var(--green-bright);
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--green-deep-2);
+    border: 3px solid var(--green-bright);
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
+
+  .field-range {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+
+  /* Results panel */
+  .results {
+    background: var(--green-deep);
+    color: #F2F7F4;
+    border: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .results::after {
+    content: "";
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(126,217,87,0.18), transparent 70%);
+  }
+
+  .roas-label {
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    color: #B9C9BF;
+    margin-bottom: 6px;
+  }
+  .roas-number {
+    font-size: clamp(3rem, 9vw, 4.4rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .roas-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 14px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-size: 0.86rem;
+    font-weight: 600;
+  }
+  .roas-status.ok {
+    background: rgba(126,217,87,0.18);
+    color: var(--green-bright);
+  }
+  .roas-status.warn {
+    background: rgba(224,120,90,0.2);
+    color: #F0A98A;
+  }
+  .roas-status .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .divider {
+    height: 1px;
+    background: rgba(255,255,255,0.12);
+    margin: 26px 0;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 10px 0;
+    font-size: 0.94rem;
+  }
+  .row + .row {
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .row .k { color: #B9C9BF; }
+  .row .v {
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
+  .bar-compare {
+    margin-top: 22px;
+  }
+  .bar-compare-label {
+    font-size: 0.8rem;
+    color: #B9C9BF;
+    margin-bottom: 10px;
+  }
+  .bar-track {
+    position: relative;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.1);
+    overflow: visible;
+    margin-bottom: 8px;
+  }
+  .bar-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: var(--green-bright);
+    transition: width 0.15s ease;
+  }
+  .bar-fill.over-warn { background: #E0785A; }
+  .bar-marker {
+    position: absolute;
+    top: -5px;
+    width: 2px;
+    height: 20px;
+    background: #F2F7F4;
+  }
+  .bar-legend {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.74rem;
+    color: #93A69B;
+  }
+
+  footer.note {
+    margin-top: 28px;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    max-width: 70ch;
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header class="page-head">
+      <h1>Kampanjan kannattavuuslaskuri</h1>
+      <p>Karkea arvio yhden kuukauden kampanjan break-even-pisteestä (raja, jonka jälkeen kampanja on maksanut itsensä takaisin) ja arvioidusta ROASista. Säädä liukusäätimiä ja tarkastele, kuinka moni ylimääräinen tuote per asema tarvitaan kattamaan kampanjan hinta.</p>
+    </header>
+
+    <div class="grid">
+      <div class="panel inputs">
+
+        <div class="field">
+          <div class="field-top">
+            <span class="field-label">Kampanjahinta</span>
+            <span class="field-value" id="val-price">30 000 €</span>
+          </div>
+          <input type="range" id="price" min="5000" max="100000" step="1000" value="30000">
+          <div class="field-range"><span>5 000 €</span><span>100 000 €</span></div>
+        </div>
+
+        <div class="field">
+          <div class="field-top">
+            <span class="field-label">Tuotteen hinta (per kpl)</span>
+            <span class="field-value" id="val-unit">2,00 €</span>
+          </div>
+          <input type="range" id="unit" min="0.5" max="20" step="0.5" value="2">
+          <div class="field-range"><span>0,50 €</span><span>20 €</span></div>
+        </div>
+
+        <div class="field">
+          <div class="field-top">
+            <span class="field-label">Asemien määrä kampanjassa</span>
+            <span class="field-value" id="val-stores">65</span>
+          </div>
+          <input type="range" id="stores" min="1" max="82" step="1" value="65">
+          <div class="field-range"><span>1</span><span>82</span></div>
+        </div>
+
+        <div class="field">
+          <div class="field-top">
+            <span class="field-label">Arvioitu lisämyynti / asema / kk</span>
+            <span class="field-value" id="val-uplift">600 kpl</span>
+          </div>
+          <input type="range" id="uplift" min="0" max="2000" step="10" value="600">
+          <div class="field-range"><span>0 kpl</span><span>2 000 kpl</span></div>
+        </div>
+
+      </div>
+
+      <div class="panel results">
+        <div class="roas-label">Arvioitu ROAS (1 kk)</div>
+        <div class="roas-number" id="out-roas">72 %</div>
+        <div class="roas-status" id="out-status">
+          <span class="dot"></span>
+          <span id="out-status-text">Alle break-evenin</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="row">
+          <span class="k">Break-even-piste, yhteensä</span>
+          <span class="v" id="out-be-total">15 000 kpl</span>
+        </div>
+        <div class="row">
+          <span class="k">Break-even-piste per asema</span>
+          <span class="v" id="out-be-store">231 kpl</span>
+        </div>
+        <div class="row">
+          <span class="k">Arvioitu lisämyynti, yhteensä</span>
+          <span class="v" id="out-rev-total">21 660 €</span>
+        </div>
+        <div class="row">
+          <span class="k">Erotus break-eveniin</span>
+          <span class="v" id="out-gap">-8 340 €</span>
+        </div>
+
+        <div class="bar-compare">
+          <div class="bar-compare-label">Arvioitu myynti / asema vs. break-even-piste / asema</div>
+          <div class="bar-track">
+            <div class="bar-fill" id="bar-fill" style="width: 0%"></div>
+            <div class="bar-marker" id="bar-marker" style="left: 0%"></div>
+          </div>
+          <div class="bar-legend">
+            <span id="bar-legend-current">0 kpl</span>
+            <span id="bar-legend-target">break-even: 0 kpl</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <footer class="note">
+      Laskuri on suuntaa-antava. Se olettaa tasaisen jakauman kaikkien asemien kesken. ROAS lasketaan arvioidusta lisämyynnistä suhteessa kampanjan hintaan, samalla logiikalla kuin pilottiraporteissa.
+    </footer>
+  </div>
+
+<script>
+  const priceEl = document.getElementById('price');
+  const unitEl = document.getElementById('unit');
+  const storesEl = document.getElementById('stores');
+  const upliftEl = document.getElementById('uplift');
+
+  const fmtEur0 = new Intl.NumberFormat('fi-FI', { maximumFractionDigits: 0 });
+  const fmtEur2 = new Intl.NumberFormat('fi-FI', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fmtInt = new Intl.NumberFormat('fi-FI', { maximumFractionDigits: 0 });
+
+  function calc() {
+    const price = parseFloat(priceEl.value);
+    const unit = parseFloat(unitEl.value);
+    const stores = parseInt(storesEl.value, 10);
+    const uplift = parseInt(upliftEl.value, 10);
+
+    document.getElementById('val-price').textContent = fmtEur0.format(price) + ' €';
+    document.getElementById('val-unit').textContent = fmtEur2.format(unit) + ' €';
+    document.getElementById('val-stores').textContent = stores;
+    document.getElementById('val-uplift').textContent = fmtInt.format(uplift) + ' kpl';
+
+    const beTotalUnits = price / unit;
+    const beUnitsPerStore = beTotalUnits / stores;
+
+    const revenueTotal = unit * uplift * stores;
+    const roas = price > 0 ? (revenueTotal / price) * 100 : 0;
+    const gap = revenueTotal - price;
+
+    document.getElementById('out-roas').textContent = Math.round(roas) + ' %';
+    document.getElementById('out-be-total').textContent = fmtInt.format(Math.round(beTotalUnits)) + ' kpl';
+    document.getElementById('out-be-store').textContent = fmtInt.format(Math.round(beUnitsPerStore)) + ' kpl';
+    document.getElementById('out-rev-total').textContent = fmtEur0.format(Math.round(revenueTotal)) + ' €';
+
+    const gapLabel = (gap >= 0 ? '+' : '') + fmtEur0.format(Math.round(gap)) + ' €';
+    document.getElementById('out-gap').textContent = gapLabel;
+
+    const statusEl = document.getElementById('out-status');
+    const statusText = document.getElementById('out-status-text');
+    const barFill = document.getElementById('bar-fill');
+
+    if (roas >= 100) {
+      statusEl.className = 'roas-status ok';
+      statusText.textContent = 'Break-evenin yläpuolella';
+      barFill.className = 'bar-fill';
+    } else {
+      statusEl.className = 'roas-status warn';
+      statusText.textContent = 'Alle break-evenin';
+      barFill.className = 'bar-fill over-warn';
+    }
+
+    // bar compare: current uplift per store vs break-even per store
+    const maxScale = Math.max(uplift, beUnitsPerStore, 1) * 1.15;
+    const currentPct = Math.min(100, (uplift / maxScale) * 100);
+    const markerPct = Math.min(100, (beUnitsPerStore / maxScale) * 100);
+
+    barFill.style.width = currentPct + '%';
+    document.getElementById('bar-marker').style.left = markerPct + '%';
+    document.getElementById('bar-legend-current').textContent = fmtInt.format(uplift) + ' kpl / asema (arvio)';
+    document.getElementById('bar-legend-target').textContent = 'break-even: ' + fmtInt.format(Math.round(beUnitsPerStore)) + ' kpl';
+  }
+
+  [priceEl, unitEl, storesEl, upliftEl].forEach(el => el.addEventListener('input', calc));
+  calc();
+</script>
+</body>
+</html>
